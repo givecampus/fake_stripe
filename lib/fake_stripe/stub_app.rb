@@ -65,6 +65,10 @@ module FakeStripe
       json_response 200, fixture('list_readers')
     end
 
+    post '/v1/terminal/readers/:id/process_payment_intent' do
+      json_response 200, fixture('process_payment_intent_reader')
+    end
+
     # ----------------------------------------------------------------------#
     # Terminal
 
