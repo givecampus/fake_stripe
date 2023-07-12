@@ -1,0 +1,23 @@
+{
+  "id": "tmr_opqKUOv9Z8UlDD7dVQNCLtHM",
+  "object": "terminal.reader",
+  "action": {
+    "failure_code": null,
+    "failure_message": null,
+    "process_payment_intent": {
+      "payment_intent": "pi_1J2fKhL91mzKIzpGamu4R46x"
+    },
+    "status": "in_progress",
+    "type": "process_payment_intent"
+  },
+  "device_sw_version": null,
+  "device_type": "bbpos_wisepos_e",
+  "ip_address": "192.168.2.2",
+  "label": "Blue Rabbit",
+  "last_seen_at": null,
+  "livemode": false,
+  "location": null,
+  "metadata": {},
+  "serial_number": "123-456-789",
+  "status": "online"
+}
