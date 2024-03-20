@@ -248,6 +248,10 @@ module FakeStripe
       json_response 200, fixture('detach_payment_method_from_customer')
     end
 
+    get '/v1/customers/:customer_id/payment_methods' do
+      json_response 200, fixture('list_payment_methods')
+    end
+
     # Bank Account (payment methods)
     post '/v1/customers/:customer_id/sources' do
       if params[:source]&.include?("btok")

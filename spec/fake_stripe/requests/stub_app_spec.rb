@@ -51,6 +51,8 @@ describe 'Stub app' do
        { route: '/v1/payment_methods/attach', method: :post },
     'POST payment_methods/dettach' =>
        { route: '/v1/payment_methods/detach', method: :post },
+    'GET customers/:customer_id/payment_methods' =>
+      { route: '/v1/customers/1/payment_methods', method: :get },
     # Subscriptions
     'POST customers/:customer_id/subscriptions' =>
        { route: '/v1/customers/1/subscriptions', method: :post },
