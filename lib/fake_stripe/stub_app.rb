@@ -872,7 +872,7 @@ module FakeStripe
 
     # Setup Intents
     post '/v1/setup_intents' do
-      if params[:payment_method].present?
+      if params[:payment_method].to_s.strip != ""
         # succeeded with attached payment_method and customer
         json_response 201, fixture('retrieve_setup_intent')
       else
