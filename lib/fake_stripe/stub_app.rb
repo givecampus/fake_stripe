@@ -656,28 +656,6 @@ module FakeStripe
       json_response 200, fixture('create_transfer_reversal')
     end
 
-    # Recipients
-    post '/v1/recipients' do
-      FakeStripe.recipient_count += 1
-      json_response 201, fixture('create_recipient')
-    end
-
-    get '/v1/recipients/:recipient_id' do
-      json_response 200, fixture('retrieve_recipient')
-    end
-
-    post '/v1/recipients/:recipient_id' do
-      json_response 200, fixture('update_recipient')
-    end
-
-    delete '/v1/recipients/:recipient_id' do
-      json_response 200, fixture('delete_recipient')
-    end
-
-    get '/v1/recipients' do
-      json_response 200, fixture('list_recipients')
-    end
-
     # Application Fees
     get '/v1/application_fees/:fee_id' do
       json_response 200, fixture('retrieve_application_fee')

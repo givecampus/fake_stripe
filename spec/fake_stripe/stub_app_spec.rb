@@ -458,14 +458,6 @@ describe FakeStripe::StubApp do
     end
   end
 
-  describe "POST /v1/recipients" do
-    it "increments the recipient counter" do
-      expect do
-        Stripe::Recipient.create
-      end.to change(FakeStripe, :recipient_count).by(1)
-    end
-  end
-
   describe "POST /v1/tokens" do
     context "when bank account is provided" do
       it "increments the token counter" do

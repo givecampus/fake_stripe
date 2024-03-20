@@ -119,15 +119,6 @@ describe 'Stub app' do
        { route: '/v1/transfers/1/cancel', method: :post },
     'GET transfers' => { route: '/v1/transfers', method: :get },
     'POST transfers/:id/reversals' => { route: '/v1/transfers/:id/reversals', method: :post },
-    # Recipients
-    'POST recipients' => { route: '/v1/recipients', method: :post },
-    'GET recipients/:recipient_id' =>
-       { route: '/v1/recipients/1', method: :get },
-    'POST recipients/:recipient_id' =>
-       { route: '/v1/recipients/1', method: :post },
-    'DELETE recipients/:recipient_id' =>
-       { route: '/v1/recipients/1', method: :delete },
-    'GET recipients' => { route: '/v1/recipients', method: :get },
     # Application Fees
     'GET application_fees/:fee_id' =>
        { route: '/v1/application_fees/1', method: :get },
