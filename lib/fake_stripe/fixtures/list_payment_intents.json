@@ -28,6 +28,7 @@
       "description": null,
       "invoice": null,
       "last_payment_error": null,
+      "latest_charge": "ch_18uPw8L91mzKIzpGAYTRv8jQ",
       "livemode": false,
       "metadata": {
         "order_id": "6789"

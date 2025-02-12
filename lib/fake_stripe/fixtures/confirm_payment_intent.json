@@ -113,6 +113,7 @@
   "description": "One blue fish",
   "invoice": null,
   "last_payment_error": null,
+  "latest_charge": "ch_1Gkt7f2eZvKYlo2CVzqe4sgl",
   "livemode": false,
   "metadata": {},
   "next_action": null,
