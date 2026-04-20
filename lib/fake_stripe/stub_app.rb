@@ -119,8 +119,10 @@ module FakeStripe
       end
     end
 
+    # basil gates `refunds` behind `expand[]=refunds`. Mirror that shape.
     get '/v1/charges/:charge_id' do
-      json_response 200, fixture('retrieve_charge')
+      fixture_name = expanded?(params[:expand], 'refunds') ? 'retrieve_charge_with_refunds' : 'retrieve_charge'
+      json_response 200, fixture(fixture_name)
     end
 
     post '/v1/charges/:charge_id' do
@@ -216,8 +218,12 @@ module FakeStripe
       json_response 201, fixture('create_customer')
     end
 
+    # basil gates the `sources` list behind `expand[]=sources`. Callers
+    # that want the legacy shape must pass expand explicitly, matching
+    # prod behavior under STRIPE_API_VERSION >= 2020-08-27.
     get '/v1/customers/:id' do
-      json_response 200, fixture('retrieve_customer')
+      fixture_name = expanded?(params[:expand], 'sources') ? 'retrieve_customer_with_sources' : 'retrieve_customer'
+      json_response 200, fixture(fixture_name)
     end
 
     post '/v1/customers/:id' do
@@ -1041,6 +1047,12 @@ module FakeStripe
       scenario = params.dig('metadata', 'fake_stripe_scenario') ||
                  params.dig(:metadata, :fake_stripe_scenario)
       scenario.to_s == 'declined'
+    end
+
+    # True if Stripe's `expand[]=<name>` was included on the request.
+    # Rack parses `expand[]=foo&expand[]=bar` as an Array at params[:expand].
+    def expanded?(expand_param, name)
+      Array(expand_param).map(&:to_s).include?(name.to_s)
     end
   end
 end

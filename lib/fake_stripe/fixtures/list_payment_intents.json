@@ -14,12 +14,6 @@
       "canceled_at": null,
       "cancellation_reason": null,
       "capture_method": "automatic",
-      "charges": {
-        "object": "list",
-        "data": [],
-        "has_more": false,
-        "url": "/v1/charges?payment_intent=pi_1Dg9Go2eZvKYlo2CC5tGDdP6"
-      },
       "client_secret": "pi_1Dg9Go2eZvKYlo2CC5tGDdP6_secret_ne7YpT2aA92l4ABSmnRn7Z5Rc",
       "confirmation_method": "automatic",
       "created": 1544527162,
@@ -36,7 +30,8 @@
       "next_action": null,
       "on_behalf_of": null,
       "payment_method": null,
-      "payment_method_options": {},
+      "payment_method_options": {
+      },
       "payment_method_types": [
         "card"
       ],
