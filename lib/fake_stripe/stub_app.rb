@@ -821,6 +821,12 @@ module FakeStripe
       json_response 200, fixture('list_balances')
     end
 
+    # Modern retrieve path (stripe-ruby >= 5). The legacy /balance/history/:id
+    # path below is kept for backward compat.
+    get '/v1/balance_transactions/:transaction_id' do
+      json_response 200, fixture('retrieve_balance_transaction')
+    end
+
     get '/v1/balance/history/:transaction_id' do
       json_response 200, fixture('retrieve_balance_transaction')
     end
