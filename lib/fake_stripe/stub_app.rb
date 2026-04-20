@@ -107,7 +107,12 @@ module FakeStripe
     # Charges
     post '/v1/charges' do
       FakeStripe.charge_count += 1
-      if params[:source]&.include?("ba_")
+      if charge_declined_scenario?(params)
+        # Real Stripe returns a 402 on decline; the client gem parses it
+        # into a Stripe::CardError. Emulate that so error-handling paths
+        # exercise the same code as prod.
+        json_response 402, fixture('create_charge_declined')
+      elsif params[:source]&.include?("ba_")
         json_response 201, fixture('create_charge_with_bank')
       else
         json_response 201, fixture('create_charge')
@@ -854,22 +859,22 @@ module FakeStripe
       json_response 200, fixture('retrieve_token')
     end
 
-    # Payment Intents
+    # Payment Intents. Tests can request non-happy-path fixtures by
+    # passing metadata[fake_stripe_scenario] = "requires_action" or
+    # "declined" at create time, or by using a pi_requires_action_* /
+    # pi_declined_* id on retrieve/confirm.
     post '/v1/payment_intents' do
       FakeStripe.payment_intent_count += 1
-      if params[:confirm]
-        json_response 201, fixture("retrieve_payment_intent")
-      else
-        json_response 201, fixture("create_payment_intent")
-      end
+      fixture_name = payment_intent_create_fixture_for(params)
+      json_response 201, fixture(fixture_name)
     end
 
     post '/v1/payment_intents/:id' do
-      json_response 200, fixture("retrieve_payment_intent")
+      json_response 200, fixture(payment_intent_fixture_for(params[:id]))
     end
 
     post '/v1/payment_intents/:id/confirm' do
-      json_response 200, fixture("confirm_payment_intent")
+      json_response 200, fixture(payment_intent_fixture_for(params[:id], confirmed: true))
     end
 
     post '/v1/payment_intents/:id/capture' do
@@ -877,7 +882,7 @@ module FakeStripe
     end
 
     get '/v1/payment_intents/:id' do
-      json_response 200, fixture("retrieve_payment_intent")
+      json_response 200, fixture(payment_intent_fixture_for(params[:id]))
     end
 
     get '/v1/payment_intents' do
@@ -1000,6 +1005,42 @@ module FakeStripe
       else
         'retrieve_account'
       end
+    end
+
+    # PaymentIntent retrieve/confirm branches on id sentinel:
+    # pi_requires_action_* → requires_action fixture (with next_action)
+    # pi_declined_*        → requires_payment_method + last_payment_error
+    # anything else        → existing succeeded fixture
+    def payment_intent_fixture_for(id, confirmed: false)
+      case id.to_s
+      when /\Api_requires_action_/ then 'retrieve_payment_intent_requires_action'
+      when /\Api_declined_/        then 'retrieve_payment_intent_declined'
+      else                              confirmed ? 'confirm_payment_intent' : 'retrieve_payment_intent'
+      end
+    end
+
+    # PaymentIntent create branches on metadata[fake_stripe_scenario]
+    # ("requires_action" or "declined") so tests can exercise those
+    # non-happy-path flows without knowing an id in advance. Default
+    # behavior preserves the existing confirm/non-confirm split.
+    def payment_intent_create_fixture_for(params)
+      scenario = params.dig('metadata', 'fake_stripe_scenario') ||
+                 params.dig(:metadata, :fake_stripe_scenario)
+      case scenario.to_s
+      when 'requires_action' then 'retrieve_payment_intent_requires_action'
+      when 'declined'        then 'retrieve_payment_intent_declined'
+      else
+        params[:confirm] ? 'retrieve_payment_intent' : 'create_payment_intent'
+      end
+    end
+
+    # Charge create decline: triggered by metadata[fake_stripe_scenario]
+    # =="declined" (same convention as PaymentIntent). Returns a 402
+    # with a card_declined error so the client gem raises Stripe::CardError.
+    def charge_declined_scenario?(params)
+      scenario = params.dig('metadata', 'fake_stripe_scenario') ||
+                 params.dig(:metadata, :fake_stripe_scenario)
+      scenario.to_s == 'declined'
     end
   end
 end

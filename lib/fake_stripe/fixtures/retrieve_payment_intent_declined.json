@@ -1,0 +1,85 @@
+{
+  "id": "pi_declined_1GLrZO2eZvKYlo2CfMpq8zT8",
+  "object": "payment_intent",
+  "amount": 2000,
+  "amount_capturable": 0,
+  "amount_received": 0,
+  "application": null,
+  "application_fee_amount": null,
+  "canceled_at": null,
+  "cancellation_reason": null,
+  "capture_method": "automatic",
+  "client_secret": "pi_declined_1GLrZO2eZvKYlo2CfMpq8zT8_secret_abc123",
+  "confirmation_method": "automatic",
+  "created": 1564599308,
+  "currency": "usd",
+  "customer": null,
+  "description": null,
+  "invoice": null,
+  "last_payment_error": {
+    "code": "card_declined",
+    "decline_code": "generic_decline",
+    "doc_url": "https://stripe.com/docs/error-codes/card-declined",
+    "message": "Your card was declined.",
+    "payment_method": {
+      "id": "pm_1F2UiZL91mzKIzpGmKzaQfb3",
+      "object": "payment_method",
+      "billing_details": {
+        "address": {
+          "city": null,
+          "country": null,
+          "line1": null,
+          "line2": null,
+          "postal_code": null,
+          "state": null
+        },
+        "email": null,
+        "name": null,
+        "phone": null
+      },
+      "card": {
+        "brand": "visa",
+        "country": "US",
+        "exp_month": 12,
+        "exp_year": 2030,
+        "fingerprint": "declinedfingerprint",
+        "funding": "credit",
+        "last4": "0002",
+        "networks": {
+          "available": ["visa"],
+          "preferred": null
+        }
+      },
+      "created": 1564629159,
+      "customer": null,
+      "livemode": false,
+      "metadata": {},
+      "type": "card"
+    },
+    "type": "card_error"
+  },
+  "latest_charge": null,
+  "livemode": false,
+  "metadata": {},
+  "next_action": null,
+  "on_behalf_of": null,
+  "payment_method": null,
+  "payment_method_options": {
+    "card": {
+      "installments": null,
+      "request_three_d_secure": "automatic"
+    }
+  },
+  "payment_method_types": [
+    "card"
+  ],
+  "receipt_email": null,
+  "review": null,
+  "setup_future_usage": null,
+  "shipping": null,
+  "statement_descriptor": null,
+  "statement_descriptor_suffix": null,
+  "status": "requires_payment_method",
+  "transfer_data": null,
+  "transfer_group": null
+}
