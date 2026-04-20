@@ -2,6 +2,11 @@ require 'sinatra/base'
 
 module FakeStripe
   class StubApp < Sinatra::Base
+    # Sinatra 4+ enforces a host allowlist. Disable it so the stub app
+    # accepts requests dispatched via WebMock to arbitrary hostnames
+    # (e.g. api.stripe.com under test).
+    set :host_authorization, { permitted_hosts: [] }
+
     # AccountLinks
     post '/v1/account_links' do
       json_response 201, fixture('create_account_link')
@@ -908,8 +913,11 @@ module FakeStripe
       json_response 201, fixture("create_payout")
     end
 
+    # Branch on id sentinel so tests can exercise each payout lifecycle
+    # state: po_paid_*, po_failed_*, po_canceled_*. Default returns
+    # the existing in_transit fixture.
     get '/v1/payouts/:id' do
-      json_response 200, fixture("retrieve_payout")
+      json_response 200, fixture(payout_fixture_for(params[:id]))
     end
 
     post '/v1/payouts/:id' do
@@ -917,7 +925,7 @@ module FakeStripe
     end
 
     post '/v1/payouts/:id/cancel' do
-      json_response 200, fixture('cancel_payout')
+      json_response 200, fixture('retrieve_payout_canceled')
     end
 
     get '/v1/payouts' do
@@ -958,6 +966,19 @@ module FakeStripe
         "create_bank_account_token"
       else
         "create_card_token"
+      end
+    end
+
+    # Sentinel-id routing for Payout.retrieve. Ids prefixed with
+    # po_paid_, po_failed_, or po_canceled_ return the matching
+    # lifecycle-state fixture. Any other id falls back to the default
+    # in_transit fixture.
+    def payout_fixture_for(id)
+      case id.to_s
+      when /\Apo_paid_/     then 'retrieve_payout_paid'
+      when /\Apo_failed_/   then 'retrieve_payout_failed'
+      when /\Apo_canceled_/ then 'retrieve_payout_canceled'
+      else                       'retrieve_payout'
       end
     end
   end
