@@ -1,0 +1,95 @@
+{
+  "id": "acct_ready_1032D82eZvKYlo2C",
+  "object": "account",
+  "business_profile": {
+    "mcc": null,
+    "name": "Stripe.com",
+    "product_description": null,
+    "support_address": null,
+    "support_email": null,
+    "support_phone": null,
+    "support_url": null,
+    "url": null
+  },
+  "business_type": null,
+  "capabilities": {
+    "card_payments": "active",
+    "transfers": "active"
+  },
+  "charges_enabled": true,
+  "controller": {
+    "is_controller": true,
+    "type": "account"
+  },
+  "country": "US",
+  "created": 1385798567,
+  "default_currency": "usd",
+  "details_submitted": true,
+  "email": "site@stripe.com",
+  "external_accounts": {
+    "object": "list",
+    "data": [],
+    "has_more": false,
+    "url": "/v1/accounts/acct_ready_1032D82eZvKYlo2C/external_accounts"
+  },
+  "future_requirements": {
+    "alternatives": [],
+    "current_deadline": null,
+    "currently_due": [],
+    "disabled_reason": null,
+    "errors": [],
+    "eventually_due": [],
+    "past_due": [],
+    "pending_verification": []
+  },
+  "metadata": {},
+  "payouts_enabled": true,
+  "requirements": {
+    "alternatives": [],
+    "current_deadline": null,
+    "currently_due": [],
+    "disabled_reason": null,
+    "errors": [],
+    "eventually_due": [],
+    "past_due": [],
+    "pending_verification": []
+  },
+  "settings": {
+    "branding": {
+      "icon": null,
+      "logo": null,
+      "primary_color": null,
+      "secondary_color": null
+    },
+    "card_payments": {
+      "decline_on": {
+        "avs_failure": true,
+        "cvc_failure": false
+      },
+      "statement_descriptor_prefix": null
+    },
+    "dashboard": {
+      "display_name": "Stripe.com",
+      "timezone": "US/Pacific"
+    },
+    "payments": {
+      "statement_descriptor": "",
+      "statement_descriptor_kana": null,
+      "statement_descriptor_kanji": null
+    },
+    "payouts": {
+      "debit_negative_balances": true,
+      "schedule": {
+        "delay_days": 7,
+        "interval": "daily"
+      },
+      "statement_descriptor": null
+    }
+  },
+  "tos_acceptance": {
+    "date": null,
+    "ip": null,
+    "user_agent": null
+  },
+  "type": "custom"
+}

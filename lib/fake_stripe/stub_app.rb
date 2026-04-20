@@ -770,8 +770,11 @@ module FakeStripe
       json_response 200, fixture('retrieve_account')
     end
 
+    # Branch on id sentinel so tests can exercise the payouts/charges-enabled
+    # happy path: acct_ready_* returns a fully verified account. Any other id
+    # returns the default (disabled) fixture.
     get '/v1/accounts/:account_id' do
-      json_response 200, fixture('retrieve_account')
+      json_response 200, fixture(account_fixture_for(params[:account_id]))
     end
 
     post "/v1/accounts" do
@@ -979,6 +982,17 @@ module FakeStripe
       when /\Apo_failed_/   then 'retrieve_payout_failed'
       when /\Apo_canceled_/ then 'retrieve_payout_canceled'
       else                       'retrieve_payout'
+      end
+    end
+
+    # Sentinel-id routing for Account.retrieve. acct_ready_* returns a
+    # fully-verified Connect account (payouts_enabled, charges_enabled).
+    # Default returns the existing not-yet-verified fixture.
+    def account_fixture_for(id)
+      if id.to_s.start_with?('acct_ready_')
+        'retrieve_account_ready'
+      else
+        'retrieve_account'
       end
     end
   end
