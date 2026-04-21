@@ -19,5 +19,9 @@
   "source_type": "card",
   "statement_descriptor": null,
   "status": "canceled",
+  "trace_id": {
+    "status": null,
+    "value": null
+  },
   "type": "bank_account"
 }

@@ -5,17 +5,8 @@
     "decline_code": "generic_decline",
     "doc_url": "https://stripe.com/docs/error-codes/card-declined",
     "message": "Your card was declined.",
-    "payment_method": {
-      "id": "pm_declined",
-      "object": "payment_method",
-      "card": {
-        "brand": "visa",
-        "exp_month": 12,
-        "exp_year": 2030,
-        "last4": "0002"
-      },
-      "type": "card"
-    },
+    "param": null,
+    "payment_method": "pm_declined",
     "type": "card_error"
   }
 }

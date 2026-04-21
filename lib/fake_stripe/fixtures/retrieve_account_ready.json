@@ -18,7 +18,17 @@
   },
   "charges_enabled": true,
   "controller": {
+    "fees": {
+      "payer": "account"
+    },
     "is_controller": true,
+    "losses": {
+      "payments": "stripe"
+    },
+    "requirement_collection": "stripe",
+    "stripe_dashboard": {
+      "type": "full"
+    },
     "type": "account"
   },
   "country": "US",
