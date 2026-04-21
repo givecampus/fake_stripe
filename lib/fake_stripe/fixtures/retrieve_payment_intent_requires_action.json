@@ -1,7 +1,7 @@
 {
-  "id": "pi_1DeODs2eZvKYlo2CO32HnTV3",
+  "id": "pi_requires_action_1GLrZO2eZvKYlo2CfMpq8zT8",
   "object": "payment_intent",
-  "amount": 1000,
+  "amount": 2000,
   "amount_capturable": 0,
   "amount_received": 0,
   "application": null,
@@ -9,23 +9,31 @@
   "canceled_at": null,
   "cancellation_reason": null,
   "capture_method": "automatic",
-  "client_secret": "pi_1DeODs2eZvKYlo2CO32HnTV3_secret_PWhcu9fa1zV3d6I85gFBvtpmB",
+  "client_secret": "pi_requires_action_1GLrZO2eZvKYlo2CfMpq8zT8_secret_abc123",
   "confirmation_method": "automatic",
-  "created": 1544107984,
+  "created": 1564599308,
   "currency": "usd",
-  "customer": "cus_HJYfEnsfVLxB3C",
+  "customer": null,
   "description": null,
   "invoice": null,
-  "latest_charge": "ch_18uPw8L91mzKIzpGAYTRv8jQ",
   "last_payment_error": null,
+  "latest_charge": null,
   "livemode": false,
-  "metadata": {
-    "order_id": "6735"
+  "metadata": {},
+  "next_action": {
+    "type": "use_stripe_sdk",
+    "use_stripe_sdk": {
+      "type": "three_d_secure_redirect",
+      "stripe_js": "https://hooks.stripe.com/3d_secure_2/hosted?merchant=acct_test&payment_intent=pi_requires_action_1GLrZO2eZvKYlo2CfMpq8zT8"
+    }
   },
-  "next_action": null,
   "on_behalf_of": null,
-  "payment_method": null,
+  "payment_method": "pm_1F2Mx4L91mzKIzpG4SghJzJg",
   "payment_method_options": {
+    "card": {
+      "installments": null,
+      "request_three_d_secure": "automatic"
+    }
   },
   "payment_method_types": [
     "card"
@@ -36,7 +44,7 @@
   "shipping": null,
   "statement_descriptor": null,
   "statement_descriptor_suffix": null,
-  "status": "requires_payment_method",
+  "status": "requires_action",
   "transfer_data": null,
   "transfer_group": null
 }

@@ -1,0 +1,27 @@
+{
+  "id": "po_failed_1GkvSj2eZvKYlo2C0xOmaM51",
+  "object": "payout",
+  "amount": 1100,
+  "arrival_date": 1589994733,
+  "automatic": true,
+  "balance_transaction": "txn_19XJJ02eZvKYlo2ClwuJ1rbA",
+  "created": 1589994733,
+  "currency": "usd",
+  "description": "STRIPE PAYOUT",
+  "destination": "ba_1GkvSj2eZvKYlo2CLHT6mUMZ",
+  "failure_balance_transaction": "txn_failure_19XJJ02eZvKYlo2C",
+  "failure_code": "account_closed",
+  "failure_message": "The bank account has been closed.",
+  "livemode": false,
+  "metadata": {},
+  "method": "standard",
+  "reconciliation_status": "not_applicable",
+  "source_type": "card",
+  "statement_descriptor": null,
+  "status": "failed",
+  "trace_id": {
+    "status": null,
+    "value": null
+  },
+  "type": "bank_account"
+}

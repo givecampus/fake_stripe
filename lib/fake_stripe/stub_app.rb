@@ -2,6 +2,11 @@ require 'sinatra/base'
 
 module FakeStripe
   class StubApp < Sinatra::Base
+    # Sinatra 4+ enforces a host allowlist. Disable it so the stub app
+    # accepts requests dispatched via WebMock to arbitrary hostnames
+    # (e.g. api.stripe.com under test).
+    set :host_authorization, { permitted_hosts: [] }
+
     # AccountLinks
     post '/v1/account_links' do
       json_response 201, fixture('create_account_link')
@@ -102,15 +107,22 @@ module FakeStripe
     # Charges
     post '/v1/charges' do
       FakeStripe.charge_count += 1
-      if params[:source]&.include?("ba_")
+      if charge_declined_scenario?(params)
+        # Real Stripe returns a 402 on decline; the client gem parses it
+        # into a Stripe::CardError. Emulate that so error-handling paths
+        # exercise the same code as prod.
+        json_response 402, fixture('create_charge_declined')
+      elsif params[:source]&.include?("ba_")
         json_response 201, fixture('create_charge_with_bank')
       else
         json_response 201, fixture('create_charge')
       end
     end
 
+    # basil gates `refunds` behind `expand[]=refunds`. Mirror that shape.
     get '/v1/charges/:charge_id' do
-      json_response 200, fixture('retrieve_charge')
+      fixture_name = expanded?(params[:expand], 'refunds') ? 'retrieve_charge_with_refunds' : 'retrieve_charge'
+      json_response 200, fixture(fixture_name)
     end
 
     post '/v1/charges/:charge_id' do
@@ -206,8 +218,12 @@ module FakeStripe
       json_response 201, fixture('create_customer')
     end
 
+    # basil gates the `sources` list behind `expand[]=sources`. Callers
+    # that want the legacy shape must pass expand explicitly, matching
+    # prod behavior under STRIPE_API_VERSION >= 2020-08-27.
     get '/v1/customers/:id' do
-      json_response 200, fixture('retrieve_customer')
+      fixture_name = expanded?(params[:expand], 'sources') ? 'retrieve_customer_with_sources' : 'retrieve_customer'
+      json_response 200, fixture(fixture_name)
     end
 
     post '/v1/customers/:id' do
@@ -765,8 +781,11 @@ module FakeStripe
       json_response 200, fixture('retrieve_account')
     end
 
+    # Branch on id sentinel so tests can exercise the payouts/charges-enabled
+    # happy path: acct_ready_* returns a fully verified account. Any other id
+    # returns the default (disabled) fixture.
     get '/v1/accounts/:account_id' do
-      json_response 200, fixture('retrieve_account')
+      json_response 200, fixture(account_fixture_for(params[:account_id]))
     end
 
     post "/v1/accounts" do
@@ -813,6 +832,12 @@ module FakeStripe
       json_response 200, fixture('list_balances')
     end
 
+    # Modern retrieve path (stripe-ruby >= 5). The legacy /balance/history/:id
+    # path below is kept for backward compat.
+    get '/v1/balance_transactions/:transaction_id' do
+      json_response 200, fixture('retrieve_balance_transaction')
+    end
+
     get '/v1/balance/history/:transaction_id' do
       json_response 200, fixture('retrieve_balance_transaction')
     end
@@ -840,22 +865,22 @@ module FakeStripe
       json_response 200, fixture('retrieve_token')
     end
 
-    # Payment Intents
+    # Payment Intents. Tests can request non-happy-path fixtures by
+    # passing metadata[fake_stripe_scenario] = "requires_action" or
+    # "declined" at create time, or by using a pi_requires_action_* /
+    # pi_declined_* id on retrieve/confirm.
     post '/v1/payment_intents' do
       FakeStripe.payment_intent_count += 1
-      if params[:confirm]
-        json_response 201, fixture("retrieve_payment_intent")
-      else
-        json_response 201, fixture("create_payment_intent")
-      end
+      fixture_name = payment_intent_create_fixture_for(params)
+      json_response 201, fixture(fixture_name)
     end
 
     post '/v1/payment_intents/:id' do
-      json_response 200, fixture("retrieve_payment_intent")
+      json_response 200, fixture(payment_intent_fixture_for(params[:id]))
     end
 
     post '/v1/payment_intents/:id/confirm' do
-      json_response 200, fixture("confirm_payment_intent")
+      json_response 200, fixture(payment_intent_fixture_for(params[:id], confirmed: true))
     end
 
     post '/v1/payment_intents/:id/capture' do
@@ -863,7 +888,7 @@ module FakeStripe
     end
 
     get '/v1/payment_intents/:id' do
-      json_response 200, fixture("retrieve_payment_intent")
+      json_response 200, fixture(payment_intent_fixture_for(params[:id]))
     end
 
     get '/v1/payment_intents' do
@@ -872,7 +897,7 @@ module FakeStripe
 
     # Setup Intents
     post '/v1/setup_intents' do
-      if params[:payment_method].present?
+      if params[:payment_method].to_s.strip != ""
         # succeeded with attached payment_method and customer
         json_response 201, fixture('retrieve_setup_intent')
       else
@@ -908,8 +933,11 @@ module FakeStripe
       json_response 201, fixture("create_payout")
     end
 
+    # Branch on id sentinel so tests can exercise each payout lifecycle
+    # state: po_paid_*, po_failed_*, po_canceled_*. Default returns
+    # the existing in_transit fixture.
     get '/v1/payouts/:id' do
-      json_response 200, fixture("retrieve_payout")
+      json_response 200, fixture(payout_fixture_for(params[:id]))
     end
 
     post '/v1/payouts/:id' do
@@ -917,7 +945,7 @@ module FakeStripe
     end
 
     post '/v1/payouts/:id/cancel' do
-      json_response 200, fixture('cancel_payout')
+      json_response 200, fixture('retrieve_payout_canceled')
     end
 
     get '/v1/payouts' do
@@ -959,6 +987,72 @@ module FakeStripe
       else
         "create_card_token"
       end
+    end
+
+    # Sentinel-id routing for Payout.retrieve. Ids prefixed with
+    # po_paid_, po_failed_, or po_canceled_ return the matching
+    # lifecycle-state fixture. Any other id falls back to the default
+    # in_transit fixture.
+    def payout_fixture_for(id)
+      case id.to_s
+      when /\Apo_paid_/     then 'retrieve_payout_paid'
+      when /\Apo_failed_/   then 'retrieve_payout_failed'
+      when /\Apo_canceled_/ then 'retrieve_payout_canceled'
+      else                       'retrieve_payout'
+      end
+    end
+
+    # Sentinel-id routing for Account.retrieve. acct_ready_* returns a
+    # fully-verified Connect account (payouts_enabled, charges_enabled).
+    # Default returns the existing not-yet-verified fixture.
+    def account_fixture_for(id)
+      if id.to_s.start_with?('acct_ready_')
+        'retrieve_account_ready'
+      else
+        'retrieve_account'
+      end
+    end
+
+    # PaymentIntent retrieve/confirm branches on id sentinel:
+    # pi_requires_action_* → requires_action fixture (with next_action)
+    # pi_declined_*        → requires_payment_method + last_payment_error
+    # anything else        → existing succeeded fixture
+    def payment_intent_fixture_for(id, confirmed: false)
+      case id.to_s
+      when /\Api_requires_action_/ then 'retrieve_payment_intent_requires_action'
+      when /\Api_declined_/        then 'retrieve_payment_intent_declined'
+      else                              confirmed ? 'confirm_payment_intent' : 'retrieve_payment_intent'
+      end
+    end
+
+    # PaymentIntent create branches on metadata[fake_stripe_scenario]
+    # ("requires_action" or "declined") so tests can exercise those
+    # non-happy-path flows without knowing an id in advance. Default
+    # behavior preserves the existing confirm/non-confirm split.
+    def payment_intent_create_fixture_for(params)
+      scenario = params.dig('metadata', 'fake_stripe_scenario') ||
+                 params.dig(:metadata, :fake_stripe_scenario)
+      case scenario.to_s
+      when 'requires_action' then 'retrieve_payment_intent_requires_action'
+      when 'declined'        then 'retrieve_payment_intent_declined'
+      else
+        params[:confirm] ? 'retrieve_payment_intent' : 'create_payment_intent'
+      end
+    end
+
+    # Charge create decline: triggered by metadata[fake_stripe_scenario]
+    # =="declined" (same convention as PaymentIntent). Returns a 402
+    # with a card_declined error so the client gem raises Stripe::CardError.
+    def charge_declined_scenario?(params)
+      scenario = params.dig('metadata', 'fake_stripe_scenario') ||
+                 params.dig(:metadata, :fake_stripe_scenario)
+      scenario.to_s == 'declined'
+    end
+
+    # True if Stripe's `expand[]=<name>` was included on the request.
+    # Rack parses `expand[]=foo&expand[]=bar` as an Array at params[:expand].
+    def expanded?(expand_param, name)
+      Array(expand_param).map(&:to_s).include?(name.to_s)
     end
   end
 end
