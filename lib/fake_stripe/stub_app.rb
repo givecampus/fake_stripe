@@ -241,11 +241,15 @@ module FakeStripe
     # Pyment Methods
     post '/v1/payment_methods' do
       FakeStripe.payment_method_count += 1
-      json_response 201, fixture('create_payment_method')
+      if params[:type].to_s == "us_bank_account"
+        json_response 201, fixture('create_us_bank_account_payment_method')
+      else
+        json_response 201, fixture('create_payment_method')
+      end
     end
 
     get '/v1/payment_methods/:payment_method_id' do
-      json_response 200, fixture('retrieve_payment_method')
+      json_response 200, fixture(payment_method_fixture_for(params[:payment_method_id], 'retrieve_payment_method'))
     end
 
     post '/v1/payment_methods/:payment_method_id' do
@@ -253,15 +257,19 @@ module FakeStripe
     end
 
     get '/v1/payment_methods' do
-      json_response 200, fixture('list_payment_methods')
+      if params[:type].to_s == "us_bank_account"
+        json_response 200, fixture('list_us_bank_account_payment_methods')
+      else
+        json_response 200, fixture('list_payment_methods')
+      end
     end
 
     post '/v1/payment_methods/:payment_method_id/attach' do
-      json_response 200, fixture('attach_payment_method_to_customer')
+      json_response 200, fixture(payment_method_fixture_for(params[:payment_method_id], 'attach_payment_method_to_customer'))
     end
 
     post '/v1/payment_methods/:payment_method_id/detach' do
-      json_response 200, fixture('detach_payment_method_from_customer')
+      json_response 200, fixture(payment_method_fixture_for(params[:payment_method_id], 'detach_payment_method_from_customer'))
     end
 
     # Bank Account (payment methods)
@@ -986,6 +994,20 @@ module FakeStripe
         "create_bank_account_token"
       else
         "create_card_token"
+      end
+    end
+
+    # Sentinel-id routing for PaymentMethod retrieve/attach/detach. Ids
+    # prefixed with pm_usba_ return the us_bank_account variant of the given
+    # default fixture (e.g. retrieve_payment_method ->
+    # retrieve_us_bank_account_payment_method), so tests can exercise the ACH
+    # bank-account PaymentMethods flow. Any other id falls back to the default
+    # (card) fixture.
+    def payment_method_fixture_for(id, default)
+      if id.to_s.start_with?('pm_usba_')
+        default.sub('payment_method', 'us_bank_account_payment_method')
+      else
+        default
       end
     end
 
