@@ -1,0 +1,38 @@
+{
+  "id": "pm_usba_1FzVb62eZvKYlo2CKPwNF9Bz",
+  "object": "payment_method",
+  "billing_details": {
+    "address": {
+      "city": null,
+      "country": "US",
+      "line1": null,
+      "line2": null,
+      "postal_code": null,
+      "state": null
+    },
+    "email": null,
+    "name": "John Doe",
+    "phone": null
+  },
+  "created": 1578693892,
+  "customer": null,
+  "livemode": false,
+  "metadata": {},
+  "type": "us_bank_account",
+  "us_bank_account": {
+    "account_holder_type": "individual",
+    "account_type": "checking",
+    "bank_name": "STRIPE TEST BANK",
+    "financial_connections_account": null,
+    "fingerprint": "LstWJFsCK7P349Bg",
+    "last4": "6789",
+    "networks": {
+      "preferred": "ach",
+      "supported": [
+        "ach"
+      ]
+    },
+    "routing_number": "110000000",
+    "status_details": {}
+  }
+}
